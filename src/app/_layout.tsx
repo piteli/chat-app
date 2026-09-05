@@ -1,18 +1,33 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
+import '@/global.css';
+
+import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+import { AppProviders } from '@/providers/AppProviders';
 
-SplashScreen.preventAutoHideAsync();
+export { ErrorBoundary } from 'expo-router';
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+void SplashScreen.preventAutoHideAsync();
+
+export default function RootLayout() {
+  useEffect(() => {
+    void SplashScreen.hideAsync();
+  }, []);
+
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
+    <AppProviders>
+      <StatusBar style="auto" />
+      <Stack
+        screenOptions={{
+          headerBackButtonDisplayMode: 'minimal',
+          animation: 'slide_from_right',
+        }}>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="chat/[contactId]" options={{ title: 'Chat' }} />
+        <Stack.Screen name="profile/[contactId]" options={{ title: 'Profile' }} />
+      </Stack>
+    </AppProviders>
   );
 }
