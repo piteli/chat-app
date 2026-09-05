@@ -49,18 +49,33 @@ export function useChatThread(contactId: number): ChatThread {
 export function mergeMessages(serverMessages: Message[], outbox: Message[]): Message[] {
   if (outbox.length === 0) return [...serverMessages].sort(byCreatedAtAsc);
 
-  const known = new Set<string>();
+  // Optimistic entries the mutation wrote into the query cache keep their clientId,
+  // so identity matching happens there. A serverId only identifies a message when it
+  // came back from the server on its own: the API reuses one id for every created
+  // post, so trusting it on echoes would fold every sent message into a single bubble.
+  const knownClientIds = new Set<string>();
+  const unclaimedServerIds = new Map<number, number>();
+
   for (const message of serverMessages) {
-    known.add(message.id);
-    if (message.clientId) known.add(message.clientId);
-    if (message.serverId !== undefined) known.add(`srv:${message.serverId}`);
+    knownClientIds.add(message.id);
+    if (message.clientId) {
+      knownClientIds.add(message.clientId);
+    } else if (message.serverId !== undefined) {
+      unclaimedServerIds.set(message.serverId, (unclaimedServerIds.get(message.serverId) ?? 0) + 1);
+    }
   }
 
   const merged = serverMessages.slice();
   for (const message of outbox) {
-    const clientId = message.clientId ?? message.id;
-    if (known.has(clientId)) continue;
-    if (message.serverId !== undefined && known.has(`srv:${message.serverId}`)) continue;
+    if (knownClientIds.has(message.clientId ?? message.id)) continue;
+
+    // One server message can only be the echo of one outbox entry, so claim it.
+    const unclaimed = message.serverId !== undefined ? unclaimedServerIds.get(message.serverId) : undefined;
+    if (unclaimed) {
+      unclaimedServerIds.set(message.serverId as number, unclaimed - 1);
+      continue;
+    }
+
     merged.push(message);
   }
 

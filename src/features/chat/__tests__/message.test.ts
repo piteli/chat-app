@@ -79,6 +79,38 @@ describe('mergeMessages', () => {
     expect(merged[0].status).toBe('sent');
   });
 
+  it('keeps earlier sent messages when the API reuses one id for every post', () => {
+    // The mock API answers every POST with the same id, so a rehydrated outbox entry
+    // and a freshly sent one both carry serverId 101.
+    const restored = {
+      ...optimistic,
+      id: 'msg_1',
+      clientId: 'msg_1',
+      serverId: 101,
+      status: 'sent' as const,
+    };
+    const justSent = {
+      ...optimistic,
+      id: 'msg_2',
+      clientId: 'msg_2',
+      serverId: 101,
+      text: 'second',
+      createdAt: '2026-01-05T10:05:00Z',
+      status: 'sent' as const,
+    };
+
+    const merged = mergeMessages([justSent], [restored, justSent]);
+    expect(merged.map((message) => message.id)).toEqual(['msg_1', 'msg_2']);
+  });
+
+  it('drops an outbox entry once the server returns it, but only that one', () => {
+    const echoed = { ...optimistic, serverId: 3, status: 'sent' as const };
+    const other = { ...optimistic, id: 'msg_2', clientId: 'msg_2', serverId: 3, status: 'sent' as const };
+
+    const merged = mergeMessages([toMessage(post(3))], [echoed, other]);
+    expect(merged.map((message) => message.id)).toEqual(['srv:3', 'msg_2']);
+  });
+
   it('always returns chronological order', () => {
     const merged = mergeMessages(
       [toMessage(post(2, { createdAt: '2026-01-09T10:00:00Z' })), toMessage(post(1))],

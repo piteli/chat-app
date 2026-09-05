@@ -160,3 +160,40 @@ It tests the real React hooks with a fake `fetch` and checks that:
 We don't fake the clock for the whole test suite. Instead, date functions receive `now` as an input, which makes them easier to test.
 
 `forceExit` is enabled because RNTL 14 with RN 0.86 can leave a process running after the tests finish.
+
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center" width="25%">
+      <img src="docs/media/01-chats.png" width="200" alt="Chats list showing 15 of 60 conversations" /><br />
+      <sub><b>Chats</b><br />Paginated list — 15 of 60 loaded</sub>
+    </td>
+    <td align="center" width="25%">
+      <img src="docs/media/02-thread.png" width="200" alt="Chat thread with day separator and composer" /><br />
+      <sub><b>Thread</b><br />Day separators, composer draft</sub>
+    </td>
+    <td align="center" width="25%">
+      <img src="docs/media/03-profile.png" width="200" alt="Contact profile with block toggle" /><br />
+      <sub><b>Profile</b><br />Contact details, block toggle</sub>
+    </td>
+    <td align="center" width="25%">
+      <img src="docs/media/04-settings.png" width="200" alt="Settings screen with theme switcher" /><br />
+      <sub><b>Settings</b><br />Theme switcher, build info</sub>
+    </td>
+  </tr>
+</table>
+
+### Demos
+
+**iOS — infinite scroll through the contact list**
+
+<video src="docs/media/ios-demo.mp4" controls muted playsinline width="320"></video>
+
+[▶ ios-demo.mp4](docs/media/ios-demo.mp4)
+
+**Android — chat thread**
+
+<video src="docs/media/android-demo.mp4" controls muted playsinline width="320"></video>
+
+[▶ android-demo.mp4](docs/media/android-demo.mp4)
